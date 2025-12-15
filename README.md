@@ -89,7 +89,7 @@ If you want to run this locally or modify it:
 
 If you like this tool, consider sending a trade offer or a gift on Steam!
 
-[**>> Send Trade Offer <<**](https://steamcommunity.com/tradeoffer/new/?partner=346289076&token=AtneZynY)
+[**>> Send gifts <<**](https://steamcommunity.com/tradeoffer/new/?partner=346289076&token=AtneZynY)
 
 ---
 
