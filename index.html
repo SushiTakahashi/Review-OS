@@ -457,7 +457,6 @@
         </header>
         
         <div class="progress-rail" id="progress-rail">
-            
         </div>
 
         <main class="viewport" id="viewport" aria-live="polite"></main>
@@ -486,11 +485,11 @@ const CONFIG = [
     { type: 'select', id: 'learning', title: 'Learning Curve', desc: 'Adaptation Rate', opts: ["Pick up and play", "Easy to learn, hard to master", "Steep learning curve", "Requires a Wiki/Guide open", "Complex / Overwhelming"] },
     { type: 'select', id: 'diff', title: 'Difficulty', desc: 'Threat Level', opts: ["Cozy / Zen", "Adjustable (Story to Hardcore)", "Normal", "Challenging", "Soulslike (Punishing)", "Unfair / Artificial Difficulty"] },
     { type: 'select', id: 'story', title: 'Narrative', desc: 'Lore Depth', opts: ["No Story", "Lore Heavy (Dark Souls style)", "Average / Generic", "Good", "Emotional / Gripping", "Masterpiece (10/10)"] },
-    { type: 'select', id: 'audience', title: 'Target Audience', desc: 'Demographics', opts: ["Kids", "Teens", "Adults", "Grandma / Casual", "Hardcore Gamers"] },
+    { type: 'select', id: 'audience', title: 'Target Audience', desc: 'Demographics (Select Multiple)', multiselect: true, opts: ["Kids", "Teens", "Adults", "Grandma / Casual", "Hardcore Gamers"] },
     { type: 'select', id: 'toxicity', title: 'Community', desc: 'Social Environment', opts: ["Wholesome / Helpful", "Average", "Toxic", "Radioactive / Unsafe", "Solo Play Recommended"] },
     { type: 'select', id: 'price', title: 'Price', desc: 'Credit Value', opts: ["Free", "Worth Full Price", "Wait for Sale", "Overpriced", "Waste of money"] },
     { type: 'select', id: 'mtx', title: 'Monetization', desc: 'Micro-Transactions', opts: ["None / One-time Purchase", "Cosmetic DLCs only", "Battlepass / Season Pass", "Pay-to-Fast (Time savers)", "Pay-to-Win / Predatory"] },
-    { type: 'text', id: 'text', title: 'Field Report', desc: 'Detailed Analysis', skippable: false },
+    { type: 'text', id: 'text', title: 'Field Report', desc: 'Detailed analysis… Press Confirm to skip', skippable: false },
     { type: 'final', id: 'final', title: 'Data Compile', desc: 'Visual Logs & Transmission', skippable: false }
 ];
 
@@ -502,7 +501,7 @@ const HEADERS = {
     'price': '[hr][/hr]\n[h1]💰 VALUE & ECONOMY[/h1]'
 };
 
-    const el = (tag, cls, child, props = {}) => {
+const el = (tag, cls, child, props = {}) => {
     const n = document.createElement(tag);
     if(cls) n.className = cls;
     if(Array.isArray(child)) n.replaceChildren(...child);
@@ -526,6 +525,7 @@ class ReviewOS {
         };
         this.timeouts = [];
         this.tiltReq = null;
+        
         this.loadProgress();
         this.init();
     }
@@ -658,8 +658,10 @@ class ReviewOS {
         let count = 0;
         
         CONFIG.forEach(c => {
+            if(c.id === 'audience') return;
             if(c.type === 'select' && this.state.sels[c.id] !== null && this.state.sels[c.id] !== undefined) {
                 const idx = this.state.sels[c.id];
+                if(Array.isArray(idx)) return;
                 const max = c.opts.length - 1;
                 let val = 10 - ((idx / max) * 10);
                 total += val;
@@ -717,7 +719,7 @@ class ReviewOS {
                     el('div', '', this.state.name, {style:'font-weight:700; font-size:20px; color:#fff'}),
                     el('button', 'btn-link', 'RE-SCAN DATABASE', {onclick:()=>{
                         this.state.name=""; this.state.appID=""; this.state.img=""; 
-                        this.saveProgress();
+                        this.saveProgress(); 
                         this.render();
                     }})
                 ])
@@ -740,15 +742,40 @@ class ReviewOS {
     rSelect(p, c) {
         const g = el('div', 'grid');
         c.opts.forEach((o, i) => {
-            const b = el('div', `opt-btn ${this.state.sels[c.id]===i?'selected':''}`, [
+            let isSelected = false;
+            if(c.multiselect) {
+                if(Array.isArray(this.state.sels[c.id])) {
+                    isSelected = this.state.sels[c.id].includes(i);
+                }
+            } else {
+                isSelected = this.state.sels[c.id] === i;
+            }
+
+            const b = el('div', `opt-btn ${isSelected ? 'selected' : ''}`, [
                 el('span', 'key', (i+1).toString()), el('span', '', o)
             ], {
                 onclick:() => {
-                    this.state.sels[c.id] = i;
-                    this.saveProgress();
-                    g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected'));
-                    b.classList.add('selected');
-                    setTimeout(()=>this.nav(1), 250);
+                    if (c.multiselect) {
+                        let current = this.state.sels[c.id];
+                        if (!Array.isArray(current)) current = [];
+                        
+                        if (current.includes(i)) {
+                            current = current.filter(x => x !== i);
+                        } else {
+                            current.push(i);
+                            current.sort();
+                        }
+                        
+                        this.state.sels[c.id] = current;
+                        this.saveProgress();
+                        this.render();
+                    } else {
+                        this.state.sels[c.id] = i;
+                        this.saveProgress();
+                        g.querySelectorAll('.opt-btn').forEach(x=>x.classList.remove('selected'));
+                        b.classList.add('selected');
+                        setTimeout(()=>this.nav(1), 250);
+                    }
                 }
             });
             g.append(b);
@@ -757,7 +784,7 @@ class ReviewOS {
     }
 
     rText(p) {
-        const updateState = () => this.save();
+        const updateState = () => this.save(); 
         
         p.append(el('div', '', [
             el('textarea', '', [], {id:'i-p', placeholder:'[+] POSITIVES', value:this.state.pros, style:'margin-bottom:10px', oninput: updateState}),
@@ -797,7 +824,10 @@ class ReviewOS {
                 ]);
 
                 c.opts.forEach((opt, idx) => {
-                    const isSelected = userSel === idx;
+                    let isSelected = false;
+                    if (c.multiselect && Array.isArray(userSel)) isSelected = userSel.includes(idx);
+                    else isSelected = userSel === idx;
+
                     const row = el('div', `sum-opt ${isSelected ? 'selected' : ''}`, [
                         el('div', 'sum-check', isSelected ? '✓' : ''),
                         el('span', '', opt)
@@ -805,7 +835,7 @@ class ReviewOS {
                     card.appendChild(row);
                 });
                 
-                if(!isAnswered) card.appendChild(el('div', 'sum-opt skipped', '— DATA SKIPPED —'));
+                if(!isAnswered && !c.multiselect) card.appendChild(el('div', 'sum-opt skipped', '— DATA SKIPPED —'));
                 grid.appendChild(card);
             }
         });
@@ -888,7 +918,13 @@ class ReviewOS {
                 
                 if(!r.ok) throw new Error('Proxy Error');
                 
-                const d = JSON.parse((await r.json()).contents);
+                const raw = await r.json();
+                let d;
+                try {
+                    d = JSON.parse(raw.contents);
+                } catch {
+                    d = raw;
+                }
                 
                 sp.style.display='none';
                 dd.replaceChildren();
@@ -903,7 +939,7 @@ class ReviewOS {
                                 this.state.name=g.name; 
                                 this.state.appID=g.id; 
                                 this.state.img=`https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${g.id}/header.jpg`; 
-                                this.saveProgress();
+                                this.saveProgress(); 
                                 this.render(); 
                             }
                         }));
@@ -957,28 +993,73 @@ class ReviewOS {
         }
         if(CONFIG[this.step].type==='select') {
             const n = parseInt(e.key);
-            if(n>0 && n<=CONFIG[this.step].opts.length) {
-                this.state.sels[CONFIG[this.step].id] = n-1;
-                this.render(); setTimeout(()=>this.nav(1), 200);
+            const opts = CONFIG[this.step].opts;
+            
+            if(n>0 && n<=opts.length) {
+                const idx = n - 1;
+                if (CONFIG[this.step].multiselect) {
+                    let current = this.state.sels[CONFIG[this.step].id];
+                    if (!Array.isArray(current)) current = [];
+                    
+                    if (current.includes(idx)) {
+                        current = current.filter(x => x !== idx);
+                    } else {
+                        current.push(idx);
+                        current.sort();
+                    }
+                    this.state.sels[CONFIG[this.step].id] = current;
+                    this.saveProgress();
+                    this.render();
+                } else {
+                    this.state.sels[CONFIG[this.step].id] = idx;
+                    this.render(); 
+                    setTimeout(()=>this.nav(1), 200);
+                }
             }
         }
     }
 
     genBB() {
-        let b = `[h1]${this.state.name}[/h1]\n`;
-        
-        CONFIG.forEach(c => {
-            if(c.type === 'select') {
-                if (HEADERS[c.id]) b += `\n\n${HEADERS[c.id]}\n`;
-                b += `\n[b]—{ ${c.title} }—[/b]\n[list]\n`;
+        let b = "";
+
+        CONFIG.forEach((c) => {
+            if (c.type === 'select') {
+                
+                if (HEADERS[c.id]) {
+                    if (b.length > 0) {
+                        b += "\n\n"; 
+                    }
+                    b += HEADERS[c.id];
+                }
+
+                let justAddedHeader = HEADERS[c.id] ? true : false;
+                
+                if (b.length > 0 && !justAddedHeader) {
+                    b += "\n\n"; 
+                } else if (b.length > 0 && justAddedHeader) {
+                    b += "\n";
+                }
+
+                b += `[b]➤ ${c.title}[/b]\n[list]\n`;
                 c.opts.forEach((opt, i) => {
-                    const mark = (this.state.sels[c.id] === i) ? '☑' : '☐';
-                    b += `${mark} ${opt}\n`;
+                    let isSel = false;
+                    
+                    if (c.multiselect && Array.isArray(this.state.sels[c.id])) {
+                        isSel = this.state.sels[c.id].includes(i);
+                    } else {
+                        isSel = this.state.sels[c.id] === i;
+                    }
+
+                    const icon = isSel ? '✅' : '⬛';
+                    const text = isSel ? `[b]${opt}[/b]` : opt;
+                    b += `[*] ${icon} ${text}\n`;
                 });
                 b += `[/list]`;
             }
         });
 
+        b += '\n\n[hr][/hr]\n[h1]📝 FINAL VERDICT[/h1]';
+        
         const lst = (t,e,x) => {
             if(!x.trim()) return '';
             let s = `\n[h1]${e} ${t}[/h1]\n[list]\n`;
@@ -986,7 +1067,6 @@ class ReviewOS {
             return s+`[/list]\n`;
         };
         
-        b+='\n\n[hr][/hr]\n[h1]📝 FINAL VERDICT[/h1]';
         b+=lst('PROS','',this.state.pros) + lst('CONS','',this.state.cons);
         if(this.state.sum.trim()) b+=`\n[quote][b]Summary:[/b] ${this.state.sum}[/quote]`;
         
